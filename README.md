@@ -1,67 +1,337 @@
+# Teachable Machine Library - Image
 
-## NEW:
+Library for using image models created with Teachable Machine.
 
-Want to bring Teachable Machine into your own web creations?
+### Model checkpoints
 
-We’re working on a library called _teachablemachine.js_ which will let you do just that. Here’s the first remixable demo you can play with to get a sneak peek at what’s possible:
+There is one link related to your model that will be provided by Teachable Machine
 
-[Hello Wizard](http://glitch.com/edit/#!/tm-wizard?path=README.md%3A1%3A0) - This demo shows how you can drop a machine learning “training wizard” on top of your website with just a few lines of code.
+`https://teachablemachine.withgoogle.com/models/MODEL_ID/`
 
-# Teachable Machine Community
+Which you can use to access:
 
-![Teachable Machine](./teachablemachine.gif)
-
-### What is Teachable Machine?
-
-[Teachable Machine](https://teachablemachine.withgoogle.com/) is a web-based tool that makes creating machine learning models fast, easy, and accessible for everyone. [You can try it here](https://teachablemachine.withgoogle.com/).
-
-### Who is it for?
-Educators, artists, students, innovators, makers of all kinds – really, anyone who has an idea they want to explore. No prerequisite machine learning knowledge required.
-
-### How does it work?
-You train a computer to recognize your images, sounds, and poses without writing any machine learning code. Then, use your model in your own projects, sites, apps, and more.
-
-### What is this repository for?
-
-This repository contains two components of [Teachable Machine](https://teachablemachine.withgoogle.com/):
-
-1. **A [libraries](/libraries) section** that contains all of the machine learning code used in Teachable Machine. Under the hood we use [Tensorflow.js](https://www.tensorflow.org/js), a library for machine learning in Javascript, to train and run the models you make in your web browser. The `libraries` section also contains the API for [image](/libraries/image), [audio](/libraries/audio), and [pose](/libraries/pose) helper libraries that make it easier to use the models exported by Teachable Machine in your own projects.
-
-2. **A [snippets](/snippets) section** that contains markdown snippets that are being displayed inside the export panel in [Teachable Machine](https://teachablemachine.withgoogle.com/). These snippets contain code and instructions on how to use the exported models from Teachable Machine in languages like Javascript, Java and Python.
-
-### How can I send feedback or get in contact with you?
-
-You have a few options:
-
-* [Use this form](https://forms.gle/uthe2C4tZNPA11GX7).  
-* Share your projects using [#teachablemachine](https://twitter.com/hashtag/teachablemachine) on Twitter or on the [Experiments with Google](https://experiments.withgoogle.com/submit) page.
-* Open an issue in this repository.
-
-## Community Contributions and Projects
-
-* [Teachable Machine Node Library for image models](https://github.com/tr7zw/teachablemachine-node-example)
-* [Teachable Machine Mobile for image models](https://github.com/mstale007/Teachable_Machine_Mobile/tree/master)
+* The model topology: `https://teachablemachine.withgoogle.com/models/MODEL_ID/model.json`
+* The model metadata: `https://teachablemachine.withgoogle.com/models/MODEL_ID/metadata.json`
 
 
-## Disclaimer
+## Usage
 
-This is an experiment, not an official Google product. We’ll do our best to support and maintain this experiment but your mileage may vary.
+There are two ways to easily use the model provided by Teachable Machine in your Javascript project: by using this library via script tags or by installing this library from NPM (and using a build tool ike Parcel, WebPack, or Rollup)
 
-We encourage open sourcing projects as a way of learning from each other. Please respect our and other creators’ rights, including copyright and trademark rights when present, when sharing these works and creating derivative work. If you want more info on Google's policy, you can find that [here](https://www.google.com/permissions/).
-# Teachable Machine Libraries
+### via Script Tag
 
-This section contains support libraries for the new version of Teachable Machine. For more info go to: [Teachable Machine](https://teachablemachine.withgoogle.com/io19).
+```js
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.3/dist/teachablemachine-image.min.js"></script>
+```
 
-## Model Libraries
+### via NPM
 
-| Library | Based on model  | Details                                                 | Install | CDN | 
-|---------|-----------------|---------------------------------------------------------|---------|-----|
-| [Image](./image/) | [MobileNet](https://github.com/tensorflow/tfjs-models/tree/master/mobilenet)       | Use a model trained to classify your own images         | `npm i @teachablemachine/image` | [![](https://data.jsdelivr.com/v1/package/npm/@teachablemachine/image/badge)](https://www.jsdelivr.com/package/npm/@teachablemachine/image) |
-| [Audio](./audio/)   | [Speech Commands](https://github.com/tensorflow/tfjs-models/tree/master/speech-commands) | Use a model trained to classify your own audio snippets | npm i @tensorflow-models/speech-commands     | [![](https://data.jsdelivr.com/v1/package/npm/@tensorflow-models/speech-commands/badge)](https://github.com/tensorflow/tfjs-models/tree/master/speech-commands) | 
-| [Pose](./pose/)   | [PoseNet](https://github.com/tensorflow/tfjs-models/tree/master/posenet) | Use a model trained to classify body poses | `npm i @teachablemachine/pose`     | [![](https://data.jsdelivr.com/v1/package/npm/@teachablemachine/pose/badge)](https://www.jsdelivr.com/package/npm/@teachablemachine/pose) |
+[NPM Package](https://www.npmjs.com/package/@teachablemachine/image)
 
-## Development
+```
+npm i @tensorflow/tfjs
+npm i @teachablemachine/image
+```
 
-You must use a node version > 12.
+```js
+import * as tf from '@tensorflow/tfjs';
+import * as tmImage from '@teachablemachine/image';
 
+```
+
+### Sample snippet
+
+```html
+<div>Teachable Machine Image Model</div>
+<button type='button' onclick='init()'>Start</button>
+<div id='webcam-container'></div>
+<div id='label-container'></div>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.3/dist/teachablemachine-image.min.js"></script>
+<script type="text/javascript">
+    // More API functions here:
+    // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+
+    // the link to your model provided by Teachable Machine export panel
+    const URL = '{{URL}}';
+
+    let model, webcam, labelContainer, maxPredictions;
+
+    let isIos = false; 
+    // fix when running demo in ios, video will be frozen;
+    if (window.navigator.userAgent.indexOf('iPhone') > -1 || window.navigator.userAgent.indexOf('iPad') > -1) {
+      isIos = true;
+    }
+    // Load the image model and setup the webcam
+    async function init() {
+        const modelURL = URL + 'model.json';
+        const metadataURL = URL + 'metadata.json';
+
+        // load the model and metadata
+        // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+        // or files from your local hard drive
+        model = await tmImage.load(modelURL, metadataURL);
+        maxPredictions = model.getTotalClasses();
+
+        // Convenience function to setup a webcam
+        const flip = true; // whether to flip the webcam
+        const width = 200;
+        const height = 200;
+        webcam = new tmImage.Webcam(width, height, flip);
+        await webcam.setup(); // request access to the webcam
+
+        if (isIos) {
+            document.getElementById('webcam-container').appendChild(webcam.webcam); // webcam object needs to be added in any case to make this work on iOS
+            // grab video-object in any way you want and set the attributes
+            const webCamVideo = document.getElementsByTagName('video')[0];
+            webCamVideo.setAttribute("playsinline", true); // written with "setAttribute" bc. iOS buggs otherwise
+            webCamVideo.muted = "true";
+            webCamVideo.style.width = width + 'px';
+            webCamVideo.style.height = height + 'px';
+        } else {
+            document.getElementById("webcam-container").appendChild(webcam.canvas);
+        }
+        // append elements to the DOM
+        labelContainer = document.getElementById('label-container');
+        for (let i = 0; i < maxPredictions; i++) { // and class labels
+            labelContainer.appendChild(document.createElement('div'));
+        }
+        webcam.play();
+        window.requestAnimationFrame(loop);
+    }
+
+    async function loop() {
+        webcam.update(); // update the webcam frame
+        await predict();
+        window.requestAnimationFrame(loop);
+    }
+
+    // run the webcam image through the image model
+    async function predict() {
+        // predict can take in an image, video or canvas html element
+        let prediction;
+        if (isIos) {
+            prediction = await model.predict(webcam.webcam);
+        } else {
+            prediction = await model.predict(webcam.canvas);
+        }
+        for (let i = 0; i < maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ': ' + prediction[i].probability.toFixed(2);
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+        }
+    }
+</script>
+```
+
+
+## API
+
+### Loading the model - url checkpoints
+
+`tmImage` is the module name, which is automatically included when you use the `<script src>` method. It gets added as an object to your window so you can access via `window.tmImage` or simply `tmImage`.
+
+```ts
+tmImage.load(
+	checkpoint: string, 
+	metadata?: string | Metadata
+)
+```
+
+Args:
+
+* **checkpoint**: a URL to a json file that contains the model topology and a reference to a bin file (model weights)
+* **metadata**: a URL to a json file that contains the text labels of your model and additional information
+
+
+Usage:
+
+```js
+await tmImage.load(checkpointURL, metadataURL);
+```
+
+
+### Loading the model - browser files
+
+You can upload your model files from a local hard drive by using a file picker and the File interface. 
+
+```ts
+tmImage.loadFromFiles(
+	model: File, 
+	weights: File, 
+	metadata: File
+) 
+```
+
+Args:
+
+* **model**: a File object that contains the model topology (.json)
+* **weights**: a File object with the model weights (.bin)
+* **metadata**: a File object that contains the text labels of your model and additional information (.json)
+
+Usage:
+
+```js
+// you need to create File objects, like with file input elements (<input type="file" ...>)
+const uploadModel = document.getElementById('upload-model');
+const uploadWeights = document.getElementById('upload-weights');
+const uploadMetadata = document.getElementById('upload-metadata');
+model = await tmImage.loadFromFiles(uploadModel.files[0], uploadWeights.files[0], uploadMetadata.files[0])
+```
+
+### Model - get total classes
+
+Once you have loaded a model, you can obtain the total number of classes in the model. 
+
+This method exists on the model that is loaded from `tmImage.load`.
+
+```ts
+model.getTotalClasses()
+```
+
+Returns a number representing the total number of classes
+
+### Model - get class labels
+
+Once you have loaded a model, you can obtain the class labels (i.e. the name of each category the model was trained on). 
+
+This method exists on the model that is loaded from `tmImage.getClassLabels`.
+
+```ts
+model.getClassLabels()
+```
+
+Returns an array with class names as strings.
+
+
+### Model - predict
+
+Once you have loaded a model, you can make a classificaiton with a couple of different input options.
+
+This method exists on the model that is loaded from `tmImage.load`.
+
+```ts
+model.predict(
+  image: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap,
+  flipped = false
+)
+```
+
+Args:
+
+* **image**: an image, canvas, or video element to make a classification on
+* **flipped**: a boolean to trigger whether to flip on X or not the image input
+
+Usage:
+
+```js
+// predict can take in an image, video or canvas html element
+// if using the webcam utility, we set flip to true since the webcam was only 
+// flipped in CSS
+const flip = true;
+const allPredictions = await model.predict(webcamElement, flip);
+```
+
+
+
+
+### Model - predictTopK
+
+This is an alternative function to `predict()` which returns the probability for all classes. 
+
+This method exists on the model that is loaded from `tmImage.load`.
+
+```ts
+model.predictTopK(
+  image: HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap,
+  maxPredictions = 10,
+  flipped = false
+)
+```
+
+Args:
+
+* **image**: an image, canvas, or video element to make a classification on
+* **flipped**: a boolean to trigger whether to flip on X or not the image input
+* **maxPredictions**: total number of predictions to return
+
+Usage:
+
+```js
+// predictTopK can take in an image, video or canvas html element
+// if using the webcam utility, we set flip to true since the webcam was only 
+// flipped in CSS
+const flip = true;
+const maxPredictions = model.getTotalClasses();
+const prediction = await model.predictTopK(webcamElement, maxPredictions, flip);
+```
+
+### Webcam
+
+You can optionally use a webcam class that comes with the library, or spin up your own webcam. This class exists on the `tmImage` module.
+
+Please note that the default webcam used in Teachable Machine was flipped on X - so you should probably set `flip = true` if creating your own webcam unless you flipped it manually in Teachable Machine.
+
+```ts
+new tmImage.Webcam(
+    width = 400,
+    height = 400,
+    flip = false,
+)
+```
+
+Args:
+
+* **width**: width of the webcam. It should ideally be square since that's how the model was trained with Teachable Machine.
+* **height**: height of the webcam. It should ideally be square since that's how the model was trained with Teachable Machine.
+* **flip**: boolean to signal whether webcam should be flipped on X. Please note this is only flipping on CSS.
+
+Usage:
+
+```js
+// webcam has a square ratio and is flipped by default to match training
+const webcam = new tmImage.Webcam(200, 200, true);
+await webcam.setup();
+webcam.play();
+document.body.appendChild(webcam.canvas);
+```
+
+### Webcam - setup
+
+After creating a Webcam object you need to call setup just once to set it up.
+
+```ts
+webcam.setup(
+	options: MediaTrackConstraints = {}
+)
+```
+
+Args:
+
+* **options**: optional media track contraints for the webcam
+
+Usage:
+
+```js
+await webcam.setup();
+```
+
+### Webcam - play, pause, stop
+
+```ts
+webcam.play();
+webcam.pause();
+webcam.stop();
+```
+
+Webcam play loads and starts playback of a media resource. Returns a promise.
+
+### Webcam - update
+
+Call on update to update the webcam frame.
+
+```ts
+webcam.update();
+```
 
