@@ -11,7 +11,7 @@
     "dev": "concurrently \"npm run dev-lite\" \"npm run test-watch\"",
     "dev-lite": "webpack --watch --reporter=basic --mode=development",
     "lint": "tslint -p . -t verbose",
-    "publish-local": "npm run build-clean && yalc publish",
+    "publish-local": "npm run build-clean",
     "make-version": "node scripts/make-version.js",
     "update-release": "npm run lint && npm run build-clean",
     "test": "karma start --single-run",
@@ -24,11 +24,8 @@
     "url": "https://github.com/googlecreativelab/teachablemachine-libraries.git",
     "directory": "image"
   },
-  "peerDependencies": {
-    "@tensorflow/tfjs": "1.3.1"
-  },
   "devDependencies": {
-    "@tensorflow/tfjs": "1.3.1",
+    "@tensorflow/tfjs": "1.7.4",
     "@types/chai": "^4.2.3",
     "@types/cli-table": "^0.3.0",
     "@types/mocha": "^5.2.7",
